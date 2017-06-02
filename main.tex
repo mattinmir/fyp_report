@@ -23,10 +23,10 @@
 %---------------------------------chapter title format
 
 \begin{document}
-\input{title}
+\input{preamble/title}
 \pagenumbering{roman}
-%\input{chapters/abstract}
-%\input{chapters/acknowledgements}
+\input{preamble/abstract}
+\input{preamble/acknowledgements}
 \tableofcontents
 \listoffigures
 
@@ -35,7 +35,7 @@
 %-----------------------------------page numbering for report
 \pagenumbering{arabic}
 
-%\input{chapters/evaluation}
+\input{sections/introduction}
 
 \bibliographystyle{unsrt}
 \bibliography{ref}
