@@ -8,6 +8,17 @@
 \usepackage{indentfirst}
 \usepackage[nottoc]{tocbibind}
 
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{cite}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{dirtytalk}
+
+
 \newcommand{\ineq}{%
   \mathrel{\mkern1mu\mkern-1mu\in\mkern-1mu\mkern1mu}} 
 %---------------------------------define line spacing 
@@ -34,9 +45,15 @@
 
 %-----------------------------------page numbering for report
 \pagenumbering{arabic}
+\input{sections/project_specification}
+\input{sections/background}
+\input{sections/implementation_overview}
+\input{sections/design_choices}
+\input{sections/testing}
+\input{sections/results_analysis}
+\input{sections/user_guide}
 
-\input{sections/introduction}
 
-\bibliographystyle{unsrt}
-\bibliography{ref}
+\bibliography{references.bib}
+\bibliographystyle{ieeetr}
 \end{document}
