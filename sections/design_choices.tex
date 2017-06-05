@@ -221,24 +221,36 @@ The chosen solution to this problem was add a double connector to the unit rod i
 %Why it wasnt suitable, needed to measure every node instead
 
 \subsection{Practicalities in Data Measurement}
-Taking only two voltage measurements worked well in the proof-of-concept from Section \ref{sec:voltages}, but when the same method was applied to a resistor chain of size 20, the voltage values measured were much less distinguishable from each other. This is because when the number of resistors is increased, the voltage across each is smaller, so shorting one makes less of a difference to the measured voltage, and thus a distinction between states is less easily made. \\
 
-The solution to this was to measure the voltage at every node in the chain, and make use of the increased information to make a more accurate inference of the positions of rods. With so many nodes being measured, it would not be possible to connect each directly to the Arduino's limited GPIO pins. Instead, multiplexers are used to direct all measurements to a single pin. The CD4051BE 8:1 multiplexer \cite{CD4051BE27:online} was chosen instead of available 16:1 multiplexers, because although more 8:1 units would be required than 16:1 units to meet our needs, its relatively low price meant it was still the more economic choice. The method for mapping the measured voltage values to rod placements is detailed in Section \ref{sec:rods}. \\
+\par Taking only two voltage measurements worked well in the proof-of-concept from Section \ref{sec:voltages}, but when the same method was applied to a resistor chain of size 20, the voltage values measured were much less distinguishable from each other. This is because when the number of resistors is increased, the voltage across each is smaller, so shorting one makes less of a difference to the measured voltage, and thus a distinction between states is less easily made. 
 
+The solution to this was to measure the voltage at every node in the chain, and make use of the increased information to make a more accurate inference of the positions of rods. With so many nodes being measured, it would not be possible to connect each directly to the Arduino's limited GPIO pins. Instead, multiplexers are used to direct all measurements to a single pin. The CD4051BE 8:1 multiplexer \cite{CD4051BE27:online} was chosen instead of available 16:1 multiplexers, because although more 8:1 units would be required than 16:1 units to meet our needs, its relatively low price meant it was still the more economic choice. The method for mapping the measured voltage values to rod placements is detailed in Section \ref{sec:rods}. 
 
 Having decided on the detection method, the project can now be separated into six components which comprise the final product. These include the construction of the board and rods themselves, the circuitry used inside the board, the software that controls the processing of the data gathered by the circuit, the method used to power the circuitry, and the process of communicating the information from the board to the server for further processing. The design choices that play a part in each of these components are justified below, as well as explored paths that turned out to be unsuccessful. 
 
 \section{Rods}
 \label{sec:rods}
+To recap the specifications for the rods, they should be similar in size and shape to the original rods (1cm diameter cuboid), and be durable enough to withstand any mistreatment by the children. They also need to have some contacts that can interface with the board, and act as a short circuit when connected. 
+
 
 \subsection{Construction Method}
 % Used 3d printing for precision and for durability
 % Why use ABS/other?
 \subsection{Electrical Contact}
 \subsection{Conductive Material}
-\subsubsection{Conductive Filament}
+
+To provide a short circuit, the rods require some conductive material to be embedded inside, connecting the two contacts. The resistance of this material should be as low as possible in order to provide a short circuit.
+
+\subsubsection{Conductive 3D Printing Filament}
+The first idea was to take advantage of the fact that a 3D printer was being used to produce the rods, and insert a conductive material as part of that process. A company named Proto-Pasta produces a conductive filament \cite{Composit79:online} which seemed an appropriate tool to use. 
+
+Working with the material was difficult, as the filament was rather brittle and had a tendency to snap, causing complications in the printing process. Despite this, the method had promise, until the first prototype rods were printed and their resistance was measured. Two rods were printed, one unit rod and a 10-rod, with resistances of around $100\Omega$ and $1K\Omega$, respectively. Remember that the rods have to act as a short for the chain of resistors in the board, and so the resistance of the rod should be much lower than that of the chain. This means the chain resistors would need to be in the megaohm range for the circuit to function properly. 
+
+While this is theoretically feasible, it became apparent that with such a high resistance, the current running through the chain would drop too low for the multiplexers to be able to take a voltage reading. Therefore, the conductive filament was no longer a viable option.
+
 %Why cant use it
 \subsubsection{Embedded Wire}
+The slightly less elegant, but more practical method of manually embedding a wire inside the rod was what was finally chosen. While this requires more manual work, it was necessary to have as low a resistance as possible in order to allow the circuit to function. 
 
     % Conductive filament and why it can't be used + that's also why we cant have holes on all 4 sides
 	
