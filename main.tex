@@ -14,13 +14,41 @@
 \usepackage[table,xcdraw]{xcolor}
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage{cite}
-\usepackage{url}
+\usepackage[hyphens]{url}
 \usepackage{booktabs}
 \usepackage{dirtytalk}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{listings}
 
+\usepackage{minted}
+\usemintedstyle{emacs}
+\definecolor{mintedbackground}{rgb}{0.95,0.95,0.95}
+\setminted[c++]{ %
+bgcolor=mintedbackground,
+breaklines=true,
+fontfamily=tt,
+gobble=0,
+frame=leftline,
+framerule=0.4pt,
+framesep=2mm,
+fontsize=\footnotesize,
+funcnamehighlighting=true,
+tabsize=2
+}
+
+\usepackage[%
+  verbose,
+  colorlinks=true,
+  naturalnames=true,
+  linkcolor=black,
+  urlcolor=blue,
+  citecolor=purple
+]{hyperref}
 
 \newcommand{\ineq}{%
   \mathrel{\mkern1mu\mkern-1mu\in\mkern-1mu\mkern1mu}} 
+\newcommand{\ignore}[1]{}
 %---------------------------------define line spacing 
 
 \usepackage[nodisplayskipstretch]{setspace}

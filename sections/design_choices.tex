@@ -154,8 +154,9 @@ To control the reading of data from the resistor chains, it was decided to make 
 
 \subsection{Determining Rod Placement}
 \label{sec:voltages}
-Prototyping began with the construction of two parallel simple resistor chains (shown in Figure \ref{fig:simple_resistor}) to learn to use the Arduino and to get some intuition on how rod placement could be ascertained from the measured voltages. 
+Prototyping began with the construction of two parallel simple resistor chains \ignore{(shown in Figure \ref{fig:simple_resistor})} to learn to use the Arduino and to get some intuition on how rod placement could be ascertained from the measured voltages. 
 
+\ignore{
 \begin{figure}[H]
 	\begin{center}
 	\includegraphics[width=0.75\textwidth]{simple_resistor_chain.jpg}\\
@@ -163,6 +164,7 @@ Prototyping began with the construction of two parallel simple resistor chains (
     \label{fig:simple_resistor}
     \end{center}
 \end{figure}
+}
 
 This first attempt incorporated the use of differing resistors down the chain, as in Figure \ref{fig:5r} (although it was later realised that using equal resistors would be better suited as they would give uniform increments of voltage at each node along the chain). A wire was used to connect two of the labelled nodes A-E to represent the functionality of the rod shorting resistors. Voltage was measured at two points along the chain to see if each different position of the rod along a chain could produce a unique pair of voltages that could be used to identify that position.  \\
 
@@ -193,11 +195,11 @@ This first attempt incorporated the use of differing resistors down the chain, a
 \label{tab:5r_voltages}
 \end{table}
 
-The values in Table \ref{tab:5r_voltages} show the voltages at V1 and V2 when each pair of nodes is connected. It is apparent that every combination of connected nodes does produce a unique pair of voltages, which proves that it is possible, in principle, to identify rods based on the voltages of the nodes. This experiment was a proof-of-concept, as it only used 5 resistors, but the real prototype needs at least 10 resistors to detect rods of up to size 10.
+The values in Table \ref{tab:5r_voltages} show the voltages at V1 and V2 when each pair of nodes is connected. It is apparent that every combination of connected nodes does produce a unique pair of voltages, which proves that it is possible, in principle, to identify rods based on the voltages of the nodes. This experiment was a proof-of-concept, as it only used 5 resistors, but the real prototype needs at least 10 resistors to detect rods of up to size 10.\\
 
 \subsection{The Problem with the Unit Rod}
 
-At the end of Section \ref{sec:voltages} we postured that we would need at least 10 resistors per chain to detect rods of up to size 10; while this is true, it overlooks the necessity to detect unit rods, of size 1. The assumption is that each node in the resistor chain is connected to a grid square on the board, and that rods connected to two nodes along a chain can short the resistors between those two nodes when connected to the board. However, a unit rod spans only one grid square, meaning that it is only connected to one node, and so cannot short any resistors. Figure \ref{fig:unitrod} demonstrates why this is the case. Note that the representations of the wires connecting the rods and the resistor chain are symbolic and do not represent what the actual connections would look like. 
+At the end of Section \ref{sec:voltages} it was proposed that at least 10 resistors would be needed per chain to detect rods of up to size 10; while this is true, it overlooks the necessity to detect unit rods, of size 1. The assumption is that each node in the resistor chain is connected to a grid square on the board, and that rods connected to two nodes along a chain can short the resistors between those two nodes when connected to the board. However, a unit rod spans only one grid square, meaning that it is only connected to one node, and so cannot short any resistors. Figure \ref{fig:unitrod} demonstrates why this is the case. Note that the representations of the wires connecting the rods and the resistor chain are symbolic and do not represent what the actual connections would look like. \\
 
 \begin{figure}[H]
 	\begin{center}
@@ -207,7 +209,7 @@ At the end of Section \ref{sec:voltages} we postured that we would need at least
     \end{center}
 \end{figure}
 
-The chosen solution to this problem was add a double connector to the unit rod instead of the unit one, so that it can connect to two nodes and short a resistor. This means that twice as many resistors are required along a chain, but allows us to detect unit rods without affecting the detection of the other sizes. Figure \ref{fig:doubleunitrod} demonstrates how doubling the number of resistors achieves this.
+The chosen solution to this problem was add a double connector to the unit rod, so that it can connect to two nodes and short a resistor. This means that twice as many resistors are required along a chain, but allows us to detect unit rods without affecting the detection of the other sizes. Figure \ref{fig:doubleunitrod} demonstrates how doubling the number of resistors achieves this.\\
 
 \begin{figure}[H]
 	\begin{center}
@@ -222,58 +224,309 @@ The chosen solution to this problem was add a double connector to the unit rod i
 
 \subsection{Practicalities in Data Measurement}
 
-\par Taking only two voltage measurements worked well in the proof-of-concept from Section \ref{sec:voltages}, but when the same method was applied to a resistor chain of size 20, the voltage values measured were much less distinguishable from each other. This is because when the number of resistors is increased, the voltage across each is smaller, so shorting one makes less of a difference to the measured voltage, and thus a distinction between states is less easily made. 
+\par Taking only two voltage measurements worked well in the proof-of-concept from Section \ref{sec:voltages}, but when the same method was applied to a resistor chain of size 20, the voltage values measured were much less distinguishable from each other. This is because when the number of resistors is increased, the voltage across each is smaller, so shorting one makes less of a difference to the measured voltage, and thus a distinction between states is less easily made. \\
 
-The solution to this was to measure the voltage at every node in the chain, and make use of the increased information to make a more accurate inference of the positions of rods. With so many nodes being measured, it would not be possible to connect each directly to the Arduino's limited GPIO pins. Instead, multiplexers are used to direct all measurements to a single pin. The CD4051BE 8:1 multiplexer \cite{CD4051BE27:online} was chosen instead of available 16:1 multiplexers, because although more 8:1 units would be required than 16:1 units to meet our needs, its relatively low price meant it was still the more economic choice. The method for mapping the measured voltage values to rod placements is detailed in Section \ref{sec:rods}. 
+The solution to this was to measure the voltage at every node in the chain, and make use of the increased information to make a more accurate inference of the positions of rods. With so many nodes being measured, it would not be possible to connect each directly to the Arduino's limited GPIO pins. Instead, multiplexers are used to direct all measurements to a single pin. The CD4051BE 8:1 multiplexer \cite{CD4051BE27:online} was chosen instead of available 16:1 multiplexers, because although more 8:1 units would be required than 16:1 units to meet our needs, its relatively low price meant it was still the more economic choice. The method for mapping the measured voltage values to rod placements is detailed in Section \ref{sec:rods}. \\
 
-Having decided on the detection method, the project can now be separated into six components which comprise the final product. These include the construction of the board and rods themselves, the circuitry used inside the board, the software that controls the processing of the data gathered by the circuit, the method used to power the circuitry, and the process of communicating the information from the board to the server for further processing. The design choices that play a part in each of these components are justified below, as well as explored paths that turned out to be unsuccessful. 
+Having decided on the detection method, the project can now be separated into six components which comprise the final product. These include the construction of the board and rods themselves, the circuitry used inside the board, the software that controls the processing of the data gathered by the circuit, the method used to power the circuitry, and the process of communicating the information from the board to the server for further processing. The design choices that play a part in each of these components are justified below, as well as explored paths that turned out to be unsuccessful.\\ 
+
+
+%		%
+%  Rods %
+% 		%
+
 
 \section{Rods}
 \label{sec:rods}
-To recap the specifications for the rods, they should be similar in size and shape to the original rods (1cm diameter cuboid), and be durable enough to withstand any mistreatment by the children. They also need to have some contacts that can interface with the board, and act as a short circuit when connected. 
+To recap the specifications for the rods, they should be similar in size and shape to the original rods (1cm\textsuperscript{2} cross-sectional area cuboid), and be durable enough to withstand any mistreatment by the children. They also need to have some contacts that can interface with the board, and act as a short circuit when connected. 
 
 
 \subsection{Construction Method}
-% Used 3d printing for precision and for durability
-% Why use ABS/other?
-\subsection{Electrical Contact}
-\subsection{Conductive Material}
+\label{sec:Construction_Method}
+The choice of construction method was based upon the precision and durability the method could offer. Precision is needed to create uniformly-positioned spaces for contacts, so that the rods line up with the grid squares on the board, and high durability is needed for the product to stay intact even after heavy use by children. \\
 
+Advice from Imperial College Robotics Society (ICRS) and the Imperial College Advanced Hackspace (ICAH) led to deciding between using either 3D printing, or laser cutting. 3D printing is a manufacturing process that resembles conventional paper printers, but instead of applying ink to a page, a 3D printer extrudes material  (usually some form of plastic) through a nozzle on to a surface, repeatedly applying more extruded material atop previous layers to  form a physical object. Laser cutting, conversely, involves cutting a design into a sheet of material, by directing a high-powered laser to melt or burn the edges of the design. \\
+
+The choice was made to use 3D printing, as it allows for more complex features that would likely be necessary for incorporating the electrical contacts in the design. For example, a laser cutter is not able to make cuts of varying depth in the material, so any recesses in the design would require cutting several layers of the design separately, then gluing them together. Using a 3D printer removes the need for this excessive labour. \\
+
+After having chosen 3D printing as the construction process, the next decision was to choose the material that would be used. It was advised that the two most commonly-used materials are PLA (Polylactic Acid) and ABS (Acrylonitrile Butadiene Styrene), and that it would be best to select one of these, since colleagues in ICAH/ICRS have most experience with these, which would make it easier to get assistance in the event that problems arise. It was also noted that PLA is more brittle than ABS, and is more prone to snapping when bent, but other than that, there is no major differences that should cause concern for the purpose of this project. This information is corroborated by other sources found online \cite{PLAvsABS47:online}\cite{TheDiffe59:online}, so it was decided that ABS would be the material of choice. \\
+
+
+
+\subsection{Conductive Material}
+\label{sec:conductivematerial}
 To provide a short circuit, the rods require some conductive material to be embedded inside, connecting the two contacts. The resistance of this material should be as low as possible in order to provide a short circuit.
 
 \subsubsection{Conductive 3D Printing Filament}
-The first idea was to take advantage of the fact that a 3D printer was being used to produce the rods, and insert a conductive material as part of that process. A company named Proto-Pasta produces a conductive filament \cite{Composit79:online} which seemed an appropriate tool to use. 
+The first idea was to take advantage of the fact that a 3D printer was being used to produce the rods, and insert a conductive material as part of that process. A company named Proto-Pasta produces a conductive filament \cite{Composit79:online} which seemed an appropriate tool to use. A model of the rod with a conductive centre can be seen in Figure \ref{fig:tenrodrender}. The rod was designed to have a non-conductive outer layer (shown in red) with the only exposed conductive material (black) being the locations where the contacts would be installed. This design was chosen over a rod made from purely conductive material to ensure that the nodes corresponding to the length of the rod were the first and only nodes to be connected, as opposed to connecting every node in-between as the rod is placed, since there is a chance that an in-between node would be registered as connected before the end nodes, which could produce erroneous data. Note also that there is space for a contact on four faces, to avoid the need for the child to find the right orientation before placing a rod.
+
+\begin{figure}[H]
+	\begin{center}
+	\includegraphics[width=\textwidth]{tenrod_render.png}\\ 
+  	\caption{Model of 10-rod with made with conductive filament}
+    \label{fig:tenrodrender}
+    \end{center}
+\end{figure}
+
 
 Working with the material was difficult, as the filament was rather brittle and had a tendency to snap, causing complications in the printing process. Despite this, the method had promise, until the first prototype rods were printed and their resistance was measured. Two rods were printed, one unit rod and a 10-rod, with resistances of around $100\Omega$ and $1K\Omega$, respectively. Remember that the rods have to act as a short for the chain of resistors in the board, and so the resistance of the rod should be much lower than that of the chain. This means the chain resistors would need to be in the megaohm range for the circuit to function properly. 
 
 While this is theoretically feasible, it became apparent that with such a high resistance, the current running through the chain would drop too low for the multiplexers to be able to take a voltage reading. Therefore, the conductive filament was no longer a viable option.
 
+
 %Why cant use it
 \subsubsection{Embedded Wire}
-The slightly less elegant, but more practical method of manually embedding a wire inside the rod was what was finally chosen. While this requires more manual work, it was necessary to have as low a resistance as possible in order to allow the circuit to function. 
+The slightly less elegant, but more suitable method of manually embedding a wire inside the rod was what was finally chosen. While this requires more manual work, it was necessary to have as low a resistance as possible in order to allow the circuit to  function. 
 
-    % Conductive filament and why it can't be used + that's also why we cant have holes on all 4 sides
+\begin{figure}[H]
+  \begin{subfigure}{.5\linewidth}
+    \centering
+    \includegraphics[width=\textwidth]{splitrod_viewhome}
+    \caption{}
+    \label{fig:splitrod_viewhome}
+  \end{subfigure}%
+  \begin{subfigure}{.5\linewidth}
+    \centering
+    \includegraphics[width=\textwidth]{splitrod_viewbottomhome}
+    \caption{}
+    \label{fig:splitrod_viewbottomhome}
+  \end{subfigure}\\[1ex]
+  \begin{subfigure}{\linewidth}
+    \centering
+    \includegraphics[width=0.5\textwidth]{splitrod_viewtop}
+    \caption{}
+    \label{fig:splitrod_viewtop}
+  \end{subfigure}
+  \caption{Rod parts viewed from different angles}
+  \label{fig:splitrod}
+\end{figure}
+
+
+To embed the wire into the rod, construction was split into two parts, which can be slotted together after the wire is inserted. Figure \ref{fig:splitrod} shows the top (red) and bottom (yellow) pieces from different angles. The rectangular hole in the red part seen in Figures \ref{fig:splitrod_viewhome} and \ref{fig:splitrod_viewtop} is a space for the body of the wire to sit, and the two small holes in the yellow part seen in Figure \ref{fig:splitrod_viewbottomhome} are where the ends of the wires would be inserted in order to connect to the contacts. The two abscesses in the yellow part seen in Figures \ref{fig:splitrod_viewhome} and \ref{fig:splitrod_viewtop} are where the outward-facing magnetic contacts would be inserted. The cylindrical protrusion/hole seen at opposite corners of either piece are used to slot into one another, to encase the wire once it has been embedded. The hole was made slightly larger than the protrusion to leave some room for glue. \\
+
+
+The disadvantage of using this method is that it makes it impractical to provide a contact on four faces of the rod, as was possible when using conductive filament. While unfortunate, this should not impact the usability of the product to a great degree, as the children should be able to recognise that the contacts on the rod should align with the contacts on the board. Hopefully, this visual cue will mitigate the problem.
+
+
+\subsection{Electrical Contact}
+\label{sec:electrical_contact}
+One of the most difficult aspects of the project, from the perspective of manufacturing, was designing a way to attach electrical contacts on to the board and rod. The first step was to decide on the nature of the contacts, pertaining to size, shape, and contact mechanism. \\
+
+The product should assist the child in aligning the rods to the grid squares on the board, to save the children from requiring the extra dexterity to do so themselves. Therefore, having contacts with come sort of locking mechanism would be preferable. However, it would not be beneficial to make the locking process too cumbersome or difficult to unlock, for example, with some form of clasp, since this could hinder the child's ability to easily add or remove rods as they experiment with different solutions. Using magnetic contacts on both the rod and board seemed like a good compromise, being able to guide the child's placement of the rod using the pull of the magnets, without requiring much force to remove the rod from the board. As long as the magnets are covered in metal, then they would be able to be connected to each other inside the rod, and connect to the contacts on the board to create a short. \\
+
+Since the dimensions of the rods and grid squares are quite small, the magnetic contacts need to be small enough to fit on them. The chosen magnets \cite{MagnetEx80:online} were discs with a 2mm diameter and 1mm height, allowing two of them to comfortably fit onto a grid square or a unit cube face, which are the smallest areas of our product that require the two magnetic contacts. A concern may be that there is a choking hazard with such small parts on the product, but regulations as listed by the government Department for Business, Energy and Industrial Strategy \cite{Products54:online} note small parts to be of concern for ``toys intended for children under 36 months", and since the product is intended for children in Key Stage 1, who are typically aged 5-7 years old, we can be confident the small parts will not be an issue. \\
+
+The next step was to consider how the magnets would be attached to the rod and board. The method used to achieve this is dependent on the conductive material used, so referring back to Section \ref{sec:conductivematerial} may assist the reader in better understanding these explanations. The main challenge was to attach the magnets to the conductive material inside the rod or board without the use of a soldering iron, because the extreme heat of the iron surpasses the magnets' curie point -- the temperature at which permanent magnetisation is lost. \todo[inline]{source} 
+
+The first action taken was to research how existing products handled the same problem. One such existing products is Cubelets, manufactured by Moss Robotics -- these are modular blocks fitted with different sensors and actuators that can be combined to form electronic circuits. The blocks connect via magnetic contacts (shown in Figure \ref{fig:cubelets}), similar to how our rods and board would ideally connect. However, information on the methodology used to design these contacts was not publicly available, the conclusion being that some proprietary method is used. 
+
+\begin{figure}[H]
+	\begin{center}
+	\includegraphics[width=0.5\textwidth]{cubelets.jpg}\\ 
+  	\caption{Cubelets by Moss Robotics \cite{Cubelets52:online}}
+    \label{fig:cubelets}
+    \end{center}
+\end{figure}
+
+\subsubsection{Silver Paint as an Adhesive}
+
+When the conductive material to be used was conductive 3D printing filament, the plan was to create an exposed area of the conductive material on the rod to which the magnet could be affixed, just as the black material is exposed in Figure \ref{fig:tenrodrender}. The adhesive used needed to be something which could, itself, conduct electricity, or else the magnet would be insulated from the conductive material. Seeking advice from colleagues led to the discovery of conductive adhesive \cite{ERSCP03B89:online}, a paint containing a high silver content that allows the flow of electricity. This paint could be used to coat the exposed area of the rod, to which the magnet would be attached. While the paint was certainly highly conductive, its success as an adhesive was limited; the paint itself easily adhered to surfaces, but this adhesion was not strong enough to keep the magnetic contact in place. \\
+
+\subsubsection{Conductive Epoxy}
+
+As detailed in Section \ref{sec:conductivematerial}, the use of conductive 3D printing filament was abandoned, and was replaced by a wire passing through the centre of the rod. The challenge was, now, to find a way to connect a wire to the magnet without the use of a soldering iron. Having seen the potential of the conductive silver paint, a similar product was experimented with: conductive epoxy. In general, epoxies are used to create strong adhesive bonds between materials, and often come in a liquid form that can be poured into cavities to mould around objects, to more effectively keep them in place. A conductive epoxy would, in theory, give the same conductive properties as the silver paint, but give much better adhesion, improving upon that drawback of the paint. 
+
+The planned procedure was to put the wire and magnetic contact in place, in the rod, as the cross-section in Figure \ref{fig:rod_cross_section_nofill} and flood the cavity in the rod with the epoxy to connect the two. The wire would be fed through from the inside of the rod, through the holes in the yellow segment of Figure \ref{fig:splitrod_viewbottomhome}, and the magnets would fit in the recesses on the other side of the yellow segment, shown in Figure \ref{fig:splitrod_viewtop}. However, upon experimentation with the epoxy, it was found to be viscous and difficult to guide into the cavity correctly, much unlike the majority of regular epoxies. This difficulty was further exacerbated by the very small space the epoxy needed to fill, much of which was already occupied by the wires. This method may well have worked better for a larger cavity, but the available space is restricted by the size of the rod. Access to more precise tools may also have produced more successful results, as part of the difficulty arose from trying to hold all the small pieces in place while applying the epoxy. 
+
+\begin{figure}[H]
+	\begin{center}
+	\includegraphics[width=0.6\textwidth]{rod_cross_section_nofill.png}\\ 
+  	\caption{Cross-section of component showing magnet and wire in place in cavity}
+    \label{fig:rod_cross_section_nofill}
+    \end{center}
+\end{figure}
+
+
+It should be noted that concern about the possible dangers of using silver-based chemicals on is unnecessary, as although the epoxy materials are hazardous pre-application, the datasheet assures that ``The cured epoxy resin presents no known hazard".
+
+\subsubsection{Silver Paint as a Cavity Filler}
+
+As was discovered, the silver paint conducted well but did not have the adhesive strength to hold together the components. Additionally, the conductive epoxy had the strength to hold the components, but was too viscous to flood the cavity. So, an alternative solution was attempted: use the silver paint to fill the cavity, as it flows freely, and use a non-conductive glue to hold the components together, being careful not to insulate the contact from the wire with the glue. Figure \ref{fig:rod_cross_section_filled} demonstrates how this would be achieved. 
 	
+\begin{figure}[H]
+	\begin{center}
+	\includegraphics[width=0.6\textwidth]{rod_cross_section_filled.png}\\ 
+  	\caption{Cross-section of cavity filled with silver paint (translucent grey) with glue (white) holding magnet and wire in place}
+    \label{fig:rod_cross_section_filled}
+    \end{center}
+\end{figure}
+
+While this method held promise, it was ultimated unsuccessful, again due to the level of precision required to apply glue to the small areas and hold the material in place. This could definitely be viable in circumstances where the appropriate equipment is available, but it was not practical in the university laboratory. 
+
+\subsubsection{Header Pins}
+\label{sec:header_pins}
+After having failed multiple attempts to reliably create a bond between the wire and magnets, a less elegant but functional method was used, in the interest of keeping to deadlines. This method involves replacing the magnetic contacts on the board with female header pins, and inserting into the rods a row of male header pins, whose ends have been connected with a soldered wire. Figure \ref{fig:header_rod} shows the recess in the rod that has been left for the header pins. Then, the male pins can be inserted into the slots on the board in order to sort that row of resistors. While it is not what would ideally be in the final product, this solution was necessary in order to produce a proof-of-concept prototype for demonstration purposes.
+
+\begin{figure}[H]
+	\begin{center}
+	\includegraphics[width=0.8\textwidth]{header_rod.png}\\ 
+  	\caption{Rod with space for header pins}
+    \label{fig:header_rod}
+    \end{center}
+\end{figure}
+
+\subsubsection{Alternative Ideas}
+Due to time constraints, some potentially viable ideas were not explored. One such method was to solder the wire to a conductive metal foil, such as copper, then wrap the magnet in the foil before affixing it to the rod. The foil would not block the magnetic field, and would also allow an electrical connection to the wire without having to tamper with the magnet. However, there may have been problems with durability, as the foil could wear away with extended use, drastically shortening the life of the product. 
+
+Another possible route would be to sandwich the end of the wire between two magnets, place the sandwich in a mould, and fill the mould with epoxy or hot glue, keeping one of the magnets exposed. This would form a secure contact between the wire and magnets, but would bring with it the expense of requiring double the magnets, and the added time and effort needed to create many moulds. It could also be subject to the same disadvantages seen earlier, pertaining to difficulties working with small components.
+
+
+    
+%			%
+%   Board 	%
+% 			%
     
 \section{Board}
 \label{sec:board}
 
-\subsection{Construction Method}
-\subsection{Electrical Contact}
-\subsection{Number of Grid Squares}
-\subsection{Lane Markings}
+The board needs to not only provide the functionality of a site for rods to be placed, but should also give visual cues to its users to help them understand how to properly make use of the product. Sections \ref{sec:Construction_Method}, and \ref{sec:electrical_contact} explain the design choices made with respect to construction of rods, and electrical contacts used, but the decisions made apply equally to the board. Section \ref{sec:header_pins} explained why the design of the board had to be changed to use header pins as opposed to magnetic contacts, but the sections below still outline the design process up to the time when that decision was made. 
+
+
+
+\subsection{Grid Squares and Lane Markings}
+
+As mentioned at the end of Section \ref{sec:complexity}, the choice was originally made to give the board a 10x10 grid for the children to place their rods on, to allow flexibility in the orientation in which the rods could be placed on the board. Later, it was decided that it would be best to allow one orientation only, as it greatly simplified the circuit to 10 parallel chains of resistors, rather than a complex interconnected mesh of resistors. The 10x10 grid also serves another useful purpose, as it is the exact amount of space needed to represent every number bond to ten using the rods, as in Figure \ref{fig:cuisenaire_combos}. This is likely to be a common exercise when using the rods, which makes this a useful size for the board.
+
+
+\begin{figure}[H]
+	\begin{center}
+	\includegraphics[width=0.3\textwidth]{cuisenaire_combos.png}\\ 
+  	\caption{Every number bond to ten using rods}
+    \label{fig:cuisenaire_combos}
+    \end{center}
+\end{figure}
+
+At first, the design of the grid on the board was not quite a grid at all, just a series of rows of contacts for the rods to be placed upon.
+Having studied principles of interaction design, specifically the work of cognitive scientist and usability engineer Donald Norman, it became clear that the design would need to be altered so that it would become more obvious how to use the product. In his book, \emph{The Design of Everyday Things} \cite{donaldnorman2002}, Norman talks about `affordances', which are the action possibilities that are readily perceivable by the actor. In the same way that the handle of a cup \emph{affords} grasping it, the design of our board must \emph{afford} the placement of rods in line with the grid squares, in the correct orientation.
+
+In order to achieve this, extra markings were added to the design to demarcate the grid squares. Recessed lines run between columns of squares, to make clear where each column exists, and protruding lines run between the rows of squares, not only as markings, but also serving the purpose of preventing rods being placed in the incorrect orientation to connect different rows, as this may produce incorrect data. 
+
+The comparison of the board before and after these affordances were added in Figures \ref{fig:boardlid_nolines} and \ref{fig:boardlid}  show how effective the markings are in improving the design.
+
+\begin{figure}[H]
+	\begin{center}
+	\includegraphics[width=0.75\textwidth]{boardlid_nolines.png}\\ 
+  	\caption{Grid squares before markings}
+    \label{fig:boardlid_nolines}
+    \end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+	\includegraphics[width=0.75\textwidth]{boardlid.png}\\ 
+  	\caption{Grid squares after markings}
+    \label{fig:boardlid}
+    \end{center}
+\end{figure}
+
+
+
+
 \subsection{Circuitry Containment and Interfaces}
+\todo[inline]{To Do: Explanation of design of charging port and how circuitry is kept in place}
 
-	% Choice to 3D print and why not laser cutter
-    % Why put lines on lid (affordance for kids and to stop cross-lane contact)
-    
+\section{Software}
+\todo[inline]{To Do: Explanation of rod-detecting code}
+
+This section will explain the code that the Arduino uses to interpret voltages read from the multiplexers and determine in what positions rods have been placed. In general terms, the code takes advantage of the fact that connected nodes will be at the same voltage level, so it sweeps along each row, checking to see where adjacent nodes are at equal voltage. The length of consecutive equal nodes corresponds to the length of the rod that has been placed. Note that the following explanations pertain to the code used to control the reduced proof-of-concept circuit, but the the code for the full circuit is very similar, with the exception of extra iterations added to account for the increased number of multiplexers. A listing intended for the full circuit can be found at ------------ but since it was not possible to properly test that code, it cannot definitively be said that it is functional, so the reduced version is explained instead.
+
+
+\todo[inline]{Mention this is the code for one line and the other code is equivalent ant can be found at ...}
+
+The code begins with global definitions, including the definition of the Arduino GPIO output pins used to  control the select lines of the multiplexers (Figure \ref{lst:mux_sel}). The multiplexers that are directly connected to the resistor chain are referred to as the level 2 multiplexers, and the multiplexer that funnels the level 2 outputs to the Arduino input is the level 1 multiplexer. This resembles their relative positions in the circuit diagram. All the level 2 units are fed the same select input, and the level 1 selects which of those to output to the Arduino, which is why all the multiplexers on the same level have the same select inputs.
+
+\begin{figure}[H]
+\centering
+\begin{minted}{c++}
+// Higher level = closer to resistors
+// Lower level = closer to Arduino
+unsigned level2_sel[] = { /*lsb*/ 25, 26, 27 /*msb*/ }; 
+unsigned level1_sel[] = { /*lsb*/ 22, 23, 24 /*msb*/ };
+\end{minted}
+\caption{Definition of pins used to control multiplexer select lines }
+\label{lst:mux_sel}
+\end{figure}
+
+The main body of the code begins by iterating over every node in the chain of resistors, reading the voltage at that node, and storing those values in a two-dimensional array, \texttt{voltages}, where each row of the array corresponds to a row of the board. Note that the iteration is performed in terms of \texttt{NO\_OF\_LINES} and \texttt{NODES\_PER\_LINE}, which are preprocessor variables that can be edited pre-compilaton. This allows the code to extend to boards of any size, should the need arise in the future. \\
+
+The expression in the condition of the innermost for loop, \texttt{j < 8 \&\& (i*8 + j) < NODES\_PER\_LINE} is necessary because there are three level 2 multiplexers per row of resistors, which means a maximum of 24 readings can be made (8 per multiplexer). However, since our circuit only requires readings of 20 nodes, this expression makes sure that the iteration ends after 20, or whatever value \texttt{NODES\_PER\_LINE} may have. In addition, the reason the reading is multiplied by \texttt{(INPUT\_VOLTAGE / 1023.0)} is that \texttt{analogRead()} returns a value that has been processed by a 10-bit analogue-digital converter (ADC), so returns a value between 0 and $2^{10}-1$ (1023), representing multiples of 4.9mV increments from 0V to 5V, and multiplying by this factor converts the value back to a voltage.
+
+\begin{figure}[H]
+\centering
+\begin{minted}{c++}
+// For each line
+  for (unsigned line = 0; line < NO_OF_LINES; line++)
+  {
+      // For each muliplexer
+     for (unsigned i = 0; i < 3; i++)
+     {
+        // Set the select of the level1 mux to the desired level2 output
+        digitalWrite(level1_sel[0], (line*3 + i) & 0x1); // Bitmask bit 1
+        digitalWrite(level1_sel[1], (line*3 + i) & 0x2); // Bitmask bit 2
+        digitalWrite(level1_sel[2], (line*3 + i) & 0x4); // Bitmask bit 3
+
+        // For each input to the level2 multiplexer
+        // (Can make 24 reads on level 2 with 3 muxes, but we are only using NODES_PER_LINE of them)
+        for (unsigned  j = 0; j < 8 && (i*8 + j) < NODES_PER_LINE; j++) 
+        {
+          // Set select to that input
+          digitalWrite(level2_sel[0], j & 0x1); // Bitmask bit 1
+          digitalWrite(level2_sel[1], j & 0x2); // Bitmask bit 2
+          digitalWrite(level2_sel[2], j & 0x4); // Bitmask bit 3
+
+          // Take reading, store in respective array element
+          voltages[line][(i*8 + j)] = analogRead(output) * (INPUT_VOLTAGE / 1023.0);
+        }
+      }
+    }
+\end{minted}
+\caption{Reading voltages from resistor chains}
+\label{lst:read_voltages}
+\end{figure}
+
+
 \section{Circuit}
-
 
 \subsection{Choosing a resistor value}
 % Requirements + model + simulation
+The circuit can be described as 10 parallel chains of identical resistors, with a series of multiplexers reading the voltage at every node, funnelling those values to an analogue input on the Arduino. \\
+
+As mentioned in Section \ref{sec:conductivematerial}, the value of the resistors is important, as picking a value too high will cause the current to drop to unmeasurable levels. However, a resistance too low will draw unnecessary power, which should be avoided, since this is a portable product, and is powered by a limited battery. \\
+
+The datasheet \cite{CD405xBC19:online} of the multiplexer the circuit uses states that, typically, $0.04\mu{}A$ is needed for a reading. Therefore, the circuit needs to use a resistor such that each node being read by a multiplexer has at least that much current flowing through it, while still trying to maximise the resistance to minimise power drawn.\\
+
+To find the value of this resistor, a model of the circuit was created, and a simulation run, which calculates the resistance at which these conditions are satisfied. \\
+
+\todo[inline]{To Do: Explanation of and results of simulation, including circuit diagram}
+
+The choice was made to produce the final circuit by soldering through-hole components to a stripboard, rather than using printed circuit boards (PCBs). This was a precautionary measure, in anticipation of changes that would need to be made as problems arose. Advice from V. Boddy, the Project Lab Manager, revealed that PCBs could take from 5-15 days to be produced and delivered, and could cost upwards of hundreds of pounds, depending on speed of delivery. Speaking with Prof. Constantinides also led to the same conclusion that stripboard would be a happy compromise of permanence and reconfigurability, reducing reliance on third parties and keeping costs low.\\
+
+However, in hindsight, this may have not been the correct decision. It seems that in these discussions the full extent of the complexity of the circuit was not foreseen. The full circuit requires 10 chains of 21 resistors, with each node connected to a multiplexer. This requires 36 multiplexers, each of which require connections to power rails as well as select inputs. This alone accounts for almost 300 flying leads and over 1000 solder joints. This does not include the soldering that would need to be done to connect the resistors to the contacts on the board, which would add several hundred more solder joints. \\
+
+Work on the circuit reached about halfway when it was realised that it would not be wise to carry on. Firstly, with the amount of manual soldering required, it became increasingly likely that an error would occur, even with regular continuity tests, which may render the circuit unusable. This was unacceptable due to the amount of time it took to build the circuit. Around two weeks were spent bringing the circuit to that halfway point, much of which was spent manually cutting and stripping wires. Additionally, although care was taken to organise cables neatly, the amount of cabling required made for a confusing and tangled circuit, to which it became increasingly difficult to add more cables. Figure \ref{fig:wiring} shows the circuit in its current state, and should make it clear why work was discontinued. Using a PCB would have removed the need for the flying leads, and even if it took several days for a new print to arrive, those days could be used doing other work, so would not be wasted.\\
+
+In lieu of the full circuit, a reduced version was produced to be used as a proof-of-concept for demonstration purposes. This reduced circuit carries the same functionality as the full circuit but only for one chain of resistors -- in other words, one row of the board. The design is very scalable, and demonstration that one row functions properly is enough to showcase the abilities of the full circuit. The only difference is that with more rows added, the current drawn is increased, so after a certain number of rows are added, the Arduino will no longer be able to supply enough current to power the device.
 
 
+\begin{figure}[H]
+	\begin{center}
+	\includegraphics[width=0.5\textwidth, angle=270]{wiring.JPG}\\ 
+  	\caption{Circuit partially made using stripboard}
+    \label{fig:wiring}
+    \end{center}
+\end{figure}
+
+\todo[inline]{To Do: Discuss creation of circuit on stripboard and connection of resistors to multiplexers}
 
 	% Choice to use multiplexers + why that multiplexer
     % Finding input impedance of mux and how to choose resistor size
@@ -281,11 +534,22 @@ The slightly less elegant, but more practical method of manually embedding a wir
     % layers of stripboard
     % Choice to use stripboard and not PCB (flexibility in changes)
 
+\subsection {Resistor Layout}
+
+The orientation and layout of the resistors went through several design iterations. 
+
 \section{Power}
+
+The choice was made to make the product battery-powered, to improve accessibility for users. If mains powered, a class would need dozens of power cables and likely also extension cords. These are an inconvenience for the class and also pose a tripping hazard, with so many wires being used.\\
+
+To make charging the device easy, a rechargeable lithium-ion battery in conjunction with an Adafruit Powerboost 500c \cite{PowerBoo78:online} are used. The Powerboost connects to the battery and also provides a USB port with a 5.2V output to power the Arduino, as well as a microUSB port that can be used to charge the battery or power the device directly. MicroUSB  is a very commonly used interface, meaning that it will not be difficult for users to replace charging cables. 
+
+
 	% Why portable/battery powered
     
 
 \section{Board to Hub Communication}
+\todo[inline]{To Do: Explain usage of radio transceiver that failed and new bluetooth module, including communication protocol used}
 	% nRF24L01 failure
     % HC05 success
     	% Talk about recommendations from internet forums as source
