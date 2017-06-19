@@ -457,7 +457,7 @@ unsigned level1_sel[] = { /*lsb*/ 22, 23, 24 /*msb*/ };
 \label{lst:mux_sel}
 \end{figure}
 
-The main body of the code begins by iterating over every node in the chain of resistors, reading the voltage at that node, and storing those values in a two-dimensional array, \texttt{voltages}, where each row of the array corresponds to a row of the board. Note that the iteration is performed in terms of \texttt{NO\_OF\_LINES} and \texttt{NODES\_PER\_LINE}, which are preprocessor variables that can be edited pre-compilaton. This allows the code to extend to boards of any size, should the need arise in the future. \\
+The main body of the code (Figure \ref{lst:read_voltages}) begins by iterating over every node in the chain of resistors, reading the voltage at that node, and storing those values in a two-dimensional array, \texttt{voltages}, where each row of the array corresponds to a row of the board. Note that the iteration is performed in terms of \texttt{NO\_OF\_LINES} and \texttt{NODES\_PER\_LINE}, which are preprocessor variables that can be edited pre-compilaton. This allows the code to extend to boards of any size, should the need arise in the future. \\
 
 The expression in the condition of the innermost for loop, \texttt{j < 8 \&\& (i*8 + j) < NODES\_PER\_LINE} is necessary because there are three level 2 multiplexers per row of resistors, which means a maximum of 24 readings can be made (8 per multiplexer). However, since our circuit only requires readings of 20 nodes, this expression makes sure that the iteration ends after 20, or whatever value \texttt{NODES\_PER\_LINE} may have. In addition, the reason the reading is multiplied by \texttt{(INPUT\_VOLTAGE / 1023.0)} is that \texttt{analogRead()} returns a value that has been processed by a 10-bit analogue-digital converter (ADC), so returns a value between 0 and $2^{10}-1$ (1023), representing multiples of 4.9mV increments from 0V to 5V, and multiplying by this factor converts the value back to a voltage.
 
@@ -494,6 +494,25 @@ The expression in the condition of the innermost for loop, \texttt{j < 8 \&\& (i
 \label{lst:read_voltages}
 \end{figure}
 
+Once the \texttt{voltages} structure has been populated, it is converted to a format that shows the state of the board in terms of rod placement, rather than voltage values. This new data structure, \texttt{rods}, has the same dimensions as \texttt{voltages}, but each element is an integer, corresponding to the length of rod currently at that position. For example, a row with a 2-rod, an empty unit space, two consecutive 3-rods, and a unit rod, as in Figure \ref{fig:example_row}, would be denoted as 
+
+
+$$\texttt{[2, 2, 0, 3, 3, 3, 3, 3, 3, 1].}$$
+
+
+The value at that element of the array denotes the length of rod occupying that position, and since the value is repeated according to the number of positions the rod occupies, it is possible to discern the rod's length. Even though it may seem difficult to calculate where the two 3-rods are since they are adjacent, using this knowledge and reading the array left-to-right allows to identify where they both begin and end. The 0 value indicates an empty position. \\
+
+\begin{figure}[H]
+	\begin{center}
+	\includegraphics[width=0.3\textwidth]{example_row.png}\\ 
+  	\caption{An example row of rods}
+    \label{fig:example_row}
+    \end{center}
+\end{figure}
+
+The program detects whether nodes are connected by a rod by reading the \texttt{voltages} structure, checking to see if their voltages are the same (within a small margin, to account for slight differences due to the impedances of the multiplexers and the tolerance of the resistors). The number of consecutive nodes at the same voltage is indicative of the size of the rod which has been placed. For example, a unit rod would short two nodes, whereas a 6-rod would short twelve adjacent nodes. 
+
+Once the positions of rods has been determined, the newly-calculated state is compared to the previous state to identify changes. If there has been a change of state (in other words, if a rod has been placed or removed), then the new state is saved for future comparisons, and is communicated to the web app. This functionality is detailed further in Section \ref{sec:hub_comms}.
 
 \section{Circuit}
 
@@ -549,6 +568,7 @@ To make charging the device easy, a rechargeable lithium-ion battery in conjunct
     
 
 \section{Board to Hub Communication}
+\label{sec:hub_comms}
 \todo[inline]{To Do: Explain usage of radio transceiver that failed and new bluetooth module, including communication protocol used}
 	% nRF24L01 failure
     % HC05 success
