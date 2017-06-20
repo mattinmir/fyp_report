@@ -23,10 +23,24 @@
 \usepackage{circuitikz}
 \usepackage[toc,page]{appendix}
 
+
 \usepackage{minted}
 \usemintedstyle{emacs}
 \definecolor{mintedbackground}{rgb}{0.95,0.95,0.95}
 \setminted[c++]{ %
+bgcolor=mintedbackground,
+breaklines=true,
+fontfamily=tt,
+gobble=0,
+frame=leftline,
+framerule=0.4pt,
+framesep=2mm,
+fontsize=\footnotesize,
+funcnamehighlighting=true,
+tabsize=2
+}
+
+\setminted[python]{ %
 bgcolor=mintedbackground,
 breaklines=true,
 fontfamily=tt,
@@ -87,11 +101,16 @@ tabsize=2
 \bibliography{references.bib}
 \bibliographystyle{ieeetr}
 
-\begin{appendix}
-\chapter{1}
+\appendix
+\section{Circuit Diagram}
+\begin{figure}[H]
+	\begin{center}
+	\includegraphics[width=0.9\textwidth]{full_circuit.png}\\ 
+    \label{fig:boardlid_nolines}
+    \end{center}
+\end{figure}
 
 
 
-\end{appendix}
 
 \end{document}
