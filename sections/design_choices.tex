@@ -389,7 +389,7 @@ Another possible route would be to sandwich the end of the wire between two magn
 \section{Board}
 \label{sec:board}
 
-The board needs to not only provide the functionality of a site for rods to be placed, but should also give visual cues to its users to help them understand how to properly make use of the product. Sections \ref{sec:Construction_Method}, and \ref{sec:electrical_contact} explain the design choices made with respect to construction of rods, and electrical contacts used, but the decisions made apply equally to the board. Section \ref{sec:header_pins} explained why the design of the board had to be changed to use header pins as opposed to magnetic contacts, but the sections below still outline the design process up to the time when that decision was made. 
+The board needs to not only provide the functionality of a site for rods to be placed, but should also give visual cues to its users to help them understand how to properly make use of the product. Sections \ref{sec:Construction_Method}, and \ref{sec:electrical_contact} explain the design choices made with respect to construction of rods, and electrical contacts used, but the decisions made apply equally to the construction of and electrical contacts used for the board. Section \ref{sec:header_pins} explained why the design of the board had to be changed to use header pins as opposed to magnetic contacts, but the sections below still outline the design process up to the time when that decision was made. 
 
 
 
@@ -494,7 +494,7 @@ The expression in the condition of the innermost for loop, \texttt{j < 8 \&\& (i
 \label{lst:read_voltages}
 \end{figure}
 
-Once the \texttt{voltages} structure has been populated, it is converted to a format that shows the state of the board in terms of rod placement, rather than voltage values. This new data structure, \texttt{rods}, has the same dimensions as \texttt{voltages}, but each element is an integer, corresponding to the length of rod currently at that position. For example, a row with a 2-rod, an empty unit space, two consecutive 3-rods, and a unit rod, as in Figure \ref{fig:example_row}, would be denoted as 
+Once the \texttt{voltages} structure has been populated, it is converted to a format that shows the state of the board in terms of rod placement, rather than voltage values. This new data structure, \texttt{rods}, has the same dimensions as \texttt{voltages}, but the elements of each row are integers, corresponding to the length of rod currently at that position. For example, a row with a 2-rod, an empty unit space, two consecutive 3-rods, and a unit rod, as in Figure \ref{fig:example_row}, would be denoted as 
 
 
 $$\texttt{[2, 2, 0, 3, 3, 3, 3, 3, 3, 1].}$$
@@ -528,6 +528,104 @@ To find the value of this resistor, a model of the circuit was created, and a si
 
 \todo[inline]{To Do: Explanation of and results of simulation, including circuit diagram}
 
+\todo[inline]{Make appendix}
+Each row of the circuit is arranged as in  Figure \ref{fig:1row_diagram}, with a chain of 21 resistors, and three multiplexers reading the voltages at every node. Additional rows are placed in parallel to this, allowing the design to scale easily, by duplicating this as many times as necessary to reach the desired number of rows.
+
+\begin{figure}[H]
+	\begin{center}
+	\includegraphics[width=\textwidth]{1row_diagram.png}\\ 
+  	\caption{Circuit diagram for one row of resistors}
+    \label{fig:1row_diagram}
+    \end{center}
+\end{figure}
+
+To properly model the circuit in terms of resistances, the input impedance of the multiplexers is needed -- this was not explicitly stated on the datasheet, but empirical testing found that each multiplexer has an input impedance of $1M\Omega$. This produced the model of the circuit shown in Figure \ref{cir:1row_model}. The figure has been truncated to fit the page, but as it is a repeating pattern it should be clear how the full model would look. Here, $R$ is the value of the resistors in the chain, and $R_M$ is the impedance of the multiplexers, $1M\Omega$.
+
+
+
+\begin{figure}[H]
+	\begin{center}		
+        \begin{circuitikz}[scale=1.3]
+        \draw
+        	(0,2) node[ground]{} to[generic, l=$R$] (2,2)
+              	to[generic, l=$R_M$] (2,0) node[ground]{}
+        	(2,2) to[generic, l=$R$] (4,2)
+        	  	to[generic, l=$R_M$] (4,0) node[ground]{}
+        	(4,2) to[generic,l=$R$] (6,2)
+        	  	to[generic, l=$R_M$] (6,0) node[ground]{}
+        ;
+        \draw 	
+        	[dashed] (6,2) to[short] (8,2)
+        	
+        ;
+        \draw 
+        	(8,2) to[generic, l=$R$] (10,2)
+        	 	to[generic, l=$R_M$] (10,0) node[ground]{}
+        	(10,2) to[generic, l=$R$] (12,2) node[rground, rotate=180, label={below:$5V$}]{}
+        ;
+        \end{circuitikz}
+    \caption{Truncated model of one row of the circuit}
+    \label{cir:1row_model}    
+    \end{center}
+\end{figure}
+
+
+\begin{figure}[H]
+	\begin{center}		
+        \begin{circuitikz} [scale=1.3]
+        \draw
+        	(0,2) node[ground]{} to[generic, i<=$I_{R_0}$,l=$R_0$, v>=$V_0$] (2,2)
+              	to[generic, i=$I_{M_0}$] (2,0) node[ground]{}
+        	(2,2) to[generic, i<=$I_{R_1}$,l=$R_1$, v>=$V_1$] (4,2)
+        	  	to[generic,  i=$I_{M_1}$] (4,0) node[ground]{}
+        	(4,2) to[generic,i<=$I_{R_2}$,l=$R_2$, v>=$V_2$] (6,2)
+        	  	to[generic,  i=$I_{M_2}$] (6,0) node[ground]{}
+        ;
+        \draw 	
+        	[dashed] (6,2) to[short] (8,2)
+        	
+        ;
+        \draw 
+        	(8,2) to[generic, i<=$I_{R_n}$,l=$R_n$, v>=$V_n$] (10,2)
+        	 	to[generic,  i=$I_{M_n}$] (10,0) node[ground]{}
+        	(10,2) to[generic, l=$R$] (12,2) node[rground, rotate=180, label={below:$5V$}]{}
+        ;
+        \end{circuitikz}
+    \caption{Model of circuit showing labelled nodes}
+    \label{cir:1row_labelled}    
+    \end{center}
+\end{figure}
+
+
+In order to calculate the optimal value for $R$, an iterative sequence of equations was calculated to describe the model, in terms of the resistances, voltages, and currents of the nodes of the circuit. Where the values $I_{M_k}$, $V_k$, $R_k$ and $I_{R_k}$ are as shown in Figure \ref{cir:1row_labelled}, the equations are:
+
+\begin{equation}
+\label{eq:IR}
+I_{R_{k+1}} = I_{R_k} + I_{M_k},
+\end{equation}
+
+\begin{equation}
+\label{eq:V}
+V_{k+1} = V_k + R \cdot I_{R_{k+1}},
+\end{equation}
+
+\begin{equation}
+\label{eq:IM}
+I_{M_{k+1}} = \frac{V_{k+1}}{R_M},
+\end{equation}
+
+where the starting conditions are dictated by the desired value of $I_{M_0}$. The voltage across the final resistor connected directly to 5V is not part of the repeating pattern, so is not described by the set of equations above, but can be easily calculated by multiplying the current through that point by its resistance.  As mentioned earlier, we aim to have a minimum of $0.04\mu{}A$ at every multiplexer input, and the multiplexer that will have the lowest current is the one reading the node between $R_0$ and $R_1$, so if $I_{M_0}$ is kept at at least that current, the rest of the multiplexers will definitely have enough current to take readings. Therefore, the starting value of $I_{M_0}$ is $0.04\mu{}A$, and the other starting conditions are calculated as follows:
+
+$$ I_{M_0} = 0.04 \cdot 10^{-6}$$
+$$ V_0 =  I_{M_0} \cdot R_M $$
+$$ I_{R_0} = \frac{V_0}{R}$$
+
+A Python script was written to calculate these iterations and determine the correct value of $R$ such that our target for  $I_{M_0}$ is met. The script calculates the voltages at every node using these equations and a given value of $R$, and determines if, for that value of $R$, the required input voltage at the top of the chain is 5V. If the calculated input voltage is too high, then the resistance was too high, so $R$ is lowered and the simulation is run again, and vice versa. The optimal value of R converged at a value of $33.3K\Omega$. \\
+
+However, upon testing the circuit with this value of resistor, the board did not function as expected, and gave incorrect readings. It is theorised that the chosen value for $R$ was high enough that a significant voltage was being dropped across the multiplexers at each node, which would disrupt the uniformity of the voltage dropped across each resistor in the chain. The Arduino code that detects rods functions most accurately when there is a uniform voltage drop, which is what may have caused the inaccurate results. To remedy this, it was decided to keep $R$ at 1\% of $R_M$, which is $10K\Omega$. This meant that much less voltage would drop across the multiplexers, and testing showed that the circuit functioned much more reliably.\\
+
+\subsection{Circuit Construction}
+
 The choice was made to produce the final circuit by soldering through-hole components to a stripboard, rather than using printed circuit boards (PCBs). This was a precautionary measure, in anticipation of changes that would need to be made as problems arose. Advice from V. Boddy, the Project Lab Manager, revealed that PCBs could take from 5-15 days to be produced and delivered, and could cost upwards of hundreds of pounds, depending on speed of delivery. Speaking with Prof. Constantinides also led to the same conclusion that stripboard would be a happy compromise of permanence and reconfigurability, reducing reliance on third parties and keeping costs low.\\
 
 However, in hindsight, this may have not been the correct decision. It seems that in these discussions the full extent of the complexity of the circuit was not foreseen. The full circuit requires 10 chains of 21 resistors, with each node connected to a multiplexer. This requires 36 multiplexers, each of which require connections to power rails as well as select inputs. This alone accounts for almost 300 flying leads and over 1000 solder joints. This does not include the soldering that would need to be done to connect the resistors to the contacts on the board, which would add several hundred more solder joints. \\
@@ -536,6 +634,7 @@ Work on the circuit reached about halfway when it was realised that it would not
 
 In lieu of the full circuit, a reduced version was produced to be used as a proof-of-concept for demonstration purposes. This reduced circuit carries the same functionality as the full circuit but only for one chain of resistors -- in other words, one row of the board. The design is very scalable, and demonstration that one row functions properly is enough to showcase the abilities of the full circuit. The only difference is that with more rows added, the current drawn is increased, so after a certain number of rows are added, the Arduino will no longer be able to supply enough current to power the device.
 
+\todo[inline]{To Do: Power Calculations}
 
 \begin{figure}[H]
 	\begin{center}
@@ -545,7 +644,7 @@ In lieu of the full circuit, a reduced version was produced to be used as a proo
     \end{center}
 \end{figure}
 
-\todo[inline]{To Do: Discuss creation of circuit on stripboard and connection of resistors to multiplexers}
+
 
 	% Choice to use multiplexers + why that multiplexer
     % Finding input impedance of mux and how to choose resistor size
@@ -555,7 +654,43 @@ In lieu of the full circuit, a reduced version was produced to be used as a proo
 
 \subsection {Resistor Layout}
 
-The orientation and layout of the resistors went through several design iterations. 
+The orientation and layout of the resistors went through several design iterations. The reason for this was that the best layout of resistors would be one that resembles the layout of grid squares on the board, to make the board contacts and the resistor chains much easier to connect. Additionally, keeping the circuit compact would save material needed for encasing  the product. \\
+
+The requirements were as follows: there should be 10 chains of 21 resistors, preferably in a uniform formation that would accommodate the grid pattern of the board; each node in the chain should have a contact for connecting to the multiplexers, and another for connecting to the board; and the design should, where possible, minimise soldering work required, to ease the production process.\\
+
+The first design, shown in Figure \ref{fig:resistor_layout_naive},  was relatively naive -- compactness was attempted by laying the resistors of one row in a horseshoe shape, and housing the multiplexers inside the horseshoe. While this is more compact than laying the resistors in a straight line, it does not lend itself well to connecting to the board connectors, as the first and last connectors need to be on opposite ends of the board, as opposed to the first and last resistors in this layout, which are both on the left.\\
+
+
+\begin{figure}[H]
+	\begin{center}
+	\includegraphics[width=\textwidth, ]{resistor_layout_naive.png}\\ 
+  	\caption{First layout for one row of resistors}
+    \label{fig:resistor_layout_naive}
+    \end{center}
+\end{figure}
+
+
+It would be difficult to design any layout that could match the dimensions of the board's grid squares while the multiplexers were on the same board as the resistors, so a new strategy was to house all the resistors on one board, and the multiplexers on another, and connect the two boards vertically. This would give the circuit a smaller surface, in exchange for making it slightly taller, which is a reasonable trade-off. The first layout of resistors with this new structure in mind is given in Figure \ref{fig:resistor_layout_square}. Evidently, this new design is much more compact, taking half as much space as the previous design to fit the same number of resistors. It also has a more uniform pattern, allowing much easier mapping of the nodes to the connectors in the board, while also leaving room for connectors towards the multiplexers below. However, as denoted by the green lines, this design requires link wires to connect the resistors in series, which adds a considerable amount of extra work to the construction process, especially considering the figure shows only one of the lines, and nine more would be a part of the full design. \\
+
+\begin{figure}[H]
+	\begin{center}
+	\includegraphics[width=\textwidth, ]{resistor_layout_square.png}\\ 
+  	\caption{First layout for one row of resistors with no multiplexers}
+    \label{fig:resistor_layout_square}
+    \end{center}
+\end{figure}
+
+
+A slightly tweaked design solved that problem, while still maintaining the uniform structure of the resistors, shown in Figure \ref{fig:resistor_layout_slanted}. Slanting the resistors meant that they would be connected in series via the tracks on the stripboard, as opposed to needing link wires. There is also room for connectors to run along the top of the chain, and wires can be soldered to the spaces in the tracks between resistors for more contacts. This is the final design of the resistor layout chosen for the circuit.
+
+\begin{figure}[H]
+	\begin{center}
+	\includegraphics[width=0.8\textwidth, ]{resistor_layout_slanted.png}\\ 
+  	\caption{Final layout of resistors}
+    \label{fig:resistor_layout_slanted}
+    \end{center}
+\end{figure}
+
 
 \section{Power}
 
